@@ -1,4 +1,4 @@
-package com;
+package com.back.wiseSaying;
 
 import java.io.IOException;
 import java.nio.file.Files;
