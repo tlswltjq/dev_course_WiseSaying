@@ -51,6 +51,25 @@ public class WiseSayingApp {
                         System.out.printf("%d번 명언이 삭제되었습니다.\n", willingDeleteId);
                     }
                     break;
+                case "수정":
+                    System.out.print("?id = ");
+                    int willingEditId = sc.nextInt();
+                    sc.nextLine();
+                    WiseSaying result = wiseSayingList.stream()
+                            .filter(wiseSaying -> wiseSaying.id.equals(willingEditId))
+                            .findFirst()
+                            .orElse(null);
+                    if (result == null) {
+                        System.out.printf("%d번 명언은 존재하지 않습니다.\n", willingEditId);
+                    } else {
+                        System.out.println("명언(기존) : " + result.content);
+                        System.out.print("명언 : ");
+                        result.content = sc.nextLine().trim();
+                        System.out.println("작가(기존) : " + result.author);
+                        System.out.print("작가 : ");
+                        result.author = sc.nextLine().trim();
+                    }
+                    break;
 
             }
         }
