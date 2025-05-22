@@ -1,13 +1,21 @@
 package com.back.wiseSaying;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public class WiseSaying {
-    Integer id;
-    String content;
-    String author;
+    private Integer id;
+    private String content;
+    private String author;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
 
     public WiseSaying(Integer id, String content, String author) {
         this.id = id;
@@ -15,33 +23,31 @@ public class WiseSaying {
         this.author = author;
     }
 
-    public static WiseSaying fromJson(Path file){
-        Integer id = 0;
-        String wiseSayingContent = "";
-        String author = "";
-        try {
-            String content = Files.readString(file);
-            int idStart = content.indexOf("\"id\":") + 5;
-            int idEnd = content.indexOf(",", idStart);
-            id = Integer.parseInt(content.substring(idStart, idEnd).trim());
+    public WiseSaying update(String content, String author) {
+        this.content = content;
+        this.author = author;
+        return this;
+    }
 
-            int contentStart = content.indexOf("\"content\":\"") + 11;
-            int contentEnd = content.indexOf("\"", contentStart);
-            wiseSayingContent = content.substring(contentStart, contentEnd);
+    public static WiseSaying fromJson(String content) {
+        int idStart = content.indexOf("\"id\":") + 5;
+        int idEnd = content.indexOf(",", idStart);
+        Integer id = Integer.parseInt(content.substring(idStart, idEnd).trim());
 
-            int authorStart = content.indexOf("\"author\":\"") + 10;
-            int authorEnd = content.indexOf("\"", authorStart);
-            author = content.substring(authorStart, authorEnd);
+        int contentStart = content.indexOf("\"content\":\"") + 11;
+        int contentEnd = content.indexOf("\"", contentStart);
+        String wiseSayingContent = content.substring(contentStart, contentEnd);
 
-        } catch (IOException | StringIndexOutOfBoundsException | NumberFormatException e) {
-            System.out.println("파일 처리 중 오류가 발생: " + e.getMessage());
-        }
+        int authorStart = content.indexOf("\"author\":\"") + 10;
+        int authorEnd = content.indexOf("\"", authorStart);
+        String author = content.substring(authorStart, authorEnd);
         return new WiseSaying(id, wiseSayingContent, author);
     }
 
     public String toJson() {
         return "{\"id\":" + this.id + ",\"content\":\"" + this.content + "\",\"author\":\"" + this.author + "\"}";
     }
+
     @Override
     public String toString() {
         return id + " / " + author + " / " + content;
