@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class WiseSayingRepository {
-    private final String dbPath = "/Users/jiseopshin/DEV/dev_course_WiseSaying/src/main/resources";
+    private String dbPath;
+
+    public WiseSayingRepository(String appRoot) {
+        dbPath = appRoot + "/db/wiseSaying";
+    }
 
     public WiseSaying save(WiseSaying wiseSaying) {
         Path filePath = Paths.get(dbPath, wiseSaying.getId() + ".json");
@@ -18,6 +22,48 @@ public class WiseSayingRepository {
             return wiseSaying;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void saveWiseSayings(List<WiseSaying> wiseSayings) {
+        if (wiseSayings.isEmpty()) {
+            return;
+        }
+        Path filePath = Paths.get(dbPath, "data.json");
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[\n\t");
+            wiseSayings.forEach(w -> sb.append(w.toJson() + ",\n\t"));
+            sb.delete(sb.length() - 3, sb.length());
+            sb.append("\n]");
+            String data = sb.toString();
+            Files.createDirectories(filePath.getParent());
+            Files.writeString(filePath, data);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("data.json 파일의 내용이 갱신되었습니다.");
+    }
+
+    public Integer saveLastId(Integer lastId) {
+        Path filePath = Paths.get(dbPath, "lastId.txt");
+
+        if (!Files.exists(filePath)) {
+            try {
+                Files.createDirectories(filePath.getParent());
+                Files.writeString(filePath, 0 + "");
+                return 0;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try {
+                Files.createDirectories(filePath.getParent());
+                Files.writeString(filePath, lastId + "");
+                return 0;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -70,5 +116,10 @@ public class WiseSayingRepository {
     public String deleteAll() {
         findAll().forEach(this::delete);
         return "모두 삭제";
+    }
+
+    public void buildData() {
+        List<WiseSaying> wiseSayingList = findAll();
+        saveWiseSayings(wiseSayingList);
     }
 }
