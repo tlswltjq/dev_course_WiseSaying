@@ -1,12 +1,19 @@
 package com;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class WiseSayingApp {
     static ArrayList<WiseSaying> wiseSayingList = new ArrayList<>();
+    static String appRoot = "/Users/jiseopshin/DEV/dev_course_WiseSaying/src/main/resources";
+    static Integer lastId = null;
 
     public static void start() {
+        init();
         Scanner sc = new Scanner(System.in);
 
         System.out.println("== 명언 앱 ==");
@@ -29,8 +36,10 @@ public class WiseSayingApp {
                     String wiseSayingAuthor = sc.nextLine().trim();
                     if (wiseSayingList.isEmpty()) {
                         wiseSayingList.add(new WiseSaying(1, wiseSayingContent, wiseSayingAuthor));
+                        lastId = 1;
                     } else {
                         wiseSayingList.add(new WiseSaying(wiseSayingList.getLast().id + 1, wiseSayingContent, wiseSayingAuthor));
+                        lastId = wiseSayingList.getLast().id;
                     }
                     System.out.printf("%d번 명언이 등록되었습니다.\n", wiseSayingList.getLast().id);
                     break;
@@ -48,6 +57,12 @@ public class WiseSayingApp {
                     if (!isRemoved) {
                         System.out.printf("%d번 명언은 존재하지 않습니다.\n", willingDeleteId);
                     } else {
+                        if (wiseSayingList.isEmpty()) {
+                            lastId = 0;
+                        } else {
+                            lastId = wiseSayingList.getLast().id;
+                        }
+                        deleteFile(appRoot + "/db/wiseSaying", willingDeleteId);
                         System.out.printf("%d번 명언이 삭제되었습니다.\n", willingDeleteId);
                     }
                     break;
@@ -73,6 +88,73 @@ public class WiseSayingApp {
 
             }
         }
+        close();
         sc.close();
+    }
+
+    private static Integer getLastId() {
+        try {
+            return Integer.parseInt(Files.readString(Path.of(appRoot + "/db/wiseSaying/lastId.txt")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void init() {
+        String path = appRoot + "/db/wiseSaying";
+
+        if (!Files.exists(Paths.get(path + "/lastId.txt"))) {
+            saveFile(path, "lastId", ".txt", "0");
+            lastId = 0;
+        } else {
+            lastId = getLastId();
+            try {
+                Path dirPath = Paths.get(appRoot + "/db/wiseSaying");
+                if (Files.exists(dirPath)) {
+                    Files.list(dirPath)
+                            .filter(file -> file.toString().endsWith(".json"))
+                            .forEach(file -> {
+                                WiseSaying wiseSaying = WiseSaying.fromJson(file);
+                                wiseSayingList.add(wiseSaying);
+                            });
+                }
+            } catch (IOException e) {
+                System.out.println("Json 로딩 중 오류가 발생: " + e.getMessage());
+            }
+        }
+    }
+
+    public static void close() {
+        wiseSayingList.forEach(w -> saveFile(appRoot + "/db/wiseSaying", w));
+        saveFile(appRoot + "/db/wiseSaying", "lastId", ".txt", String.valueOf(lastId));
+    }
+
+    public static void saveFile(String path, String fileName, String fileExtension, String fileContent) {
+        try {
+            Path filePath = Paths.get(path, fileName + fileExtension);
+            Files.createDirectories(filePath.getParent());
+            Files.writeString(filePath, fileContent);
+        } catch (java.io.IOException e) {
+            System.out.println("파일 저장 중 오류가 발생: " + e.getMessage());
+        }
+    }
+
+    public static void saveFile(String path, WiseSaying wiseSaying) {
+        try {
+            Path filePath = Paths.get(path, wiseSaying.id + ".json");
+            Files.createDirectories(filePath.getParent());
+            Files.writeString(filePath, "{\"id\":" + wiseSaying.id + ",\"content\":\"" + wiseSaying.content + "\",\"author\":\"" + wiseSaying.author + "\"}");
+        } catch (java.io.IOException e) {
+            System.out.println("파일 저장 중 오류가 발생: " + e.getMessage());
+        }
+    }
+
+    public static void deleteFile(String path, Integer id) {
+        try {
+            Path filePath = Paths.get(path, id + ".json");
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            System.out.println("파일 삭제 중 오류가 발생: " + e.getMessage());
+        }
     }
 }
