@@ -143,13 +143,7 @@ public class WiseSayingApp {
     }
 
     public static void saveFile(String path, WiseSaying wiseSaying) {
-        try {
-            Path filePath = Paths.get(path, wiseSaying.id + ".json");
-            Files.createDirectories(filePath.getParent());
-            Files.writeString(filePath, wiseSaying.toJson());
-        } catch (java.io.IOException e) {
-            System.out.println("파일 저장 중 오류가 발생: " + e.getMessage());
-        }
+        saveFile(path, wiseSaying.id+"", ".json", wiseSaying.content);
     }
 
     public static void deleteFile(String path, Integer id) {
