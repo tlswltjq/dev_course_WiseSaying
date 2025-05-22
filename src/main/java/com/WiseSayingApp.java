@@ -85,7 +85,10 @@ public class WiseSayingApp {
                         result.author = sc.nextLine().trim();
                     }
                     break;
-
+                case "빌드":
+                    build();
+                    System.out.println("data.json 파일의 내용이 갱신되었습니다.");
+                    break;
             }
         }
         close();
@@ -143,7 +146,7 @@ public class WiseSayingApp {
         try {
             Path filePath = Paths.get(path, wiseSaying.id + ".json");
             Files.createDirectories(filePath.getParent());
-            Files.writeString(filePath, "{\"id\":" + wiseSaying.id + ",\"content\":\"" + wiseSaying.content + "\",\"author\":\"" + wiseSaying.author + "\"}");
+            Files.writeString(filePath, wiseSaying.toJson());
         } catch (java.io.IOException e) {
             System.out.println("파일 저장 중 오류가 발생: " + e.getMessage());
         }
@@ -156,5 +159,15 @@ public class WiseSayingApp {
         } catch (IOException e) {
             System.out.println("파일 삭제 중 오류가 발생: " + e.getMessage());
         }
+    }
+
+    public static void build() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[\n\t");
+        wiseSayingList.forEach(w -> sb.append(w.toJson() + ",\n\t"));
+        sb.delete(sb.length() - 3, sb.length());
+        sb.append("\n]");
+        String data = sb.toString();
+        saveFile(appRoot + "/db/wiseSaying", "data", ".json", data);
     }
 }

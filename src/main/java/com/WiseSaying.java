@@ -39,6 +39,9 @@ public class WiseSaying {
         return new WiseSaying(id, wiseSayingContent, author);
     }
 
+    public String toJson() {
+        return "{\"id\":" + this.id + ",\"content\":\"" + this.content + "\",\"author\":\"" + this.author + "\"}";
+    }
     @Override
     public String toString() {
         return id + " / " + author + " / " + content;
